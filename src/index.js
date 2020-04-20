@@ -6,24 +6,66 @@ class App extends React.Component {
   state = {
     breakTime: 300,
     sessionTime: 1500,
-    isTimerOn: false,
+    activeTime: 1500,
+    sessionOn: false,
+    breakOn: false,
   };
 
   handleReset = () => {
     console.log("RESET TRIGGERED!");
-    this.setState({ breakTime: 300, sessionTime: 1500, isTimerOn: false });
+    this.setState({
+      breakTime: 300,
+      sessionTime: 1500,
+      activeTime: 1500,
+      sessionOn: false,
+      breakOn: false,
+      isPaused: false,
+    });
   };
 
-  handleIncrement = (type) => {
-    type === "session"
-      ? this.setState({ sessionTime: this.state.sessionTime + 60 })
-      : this.setState({ breakTime: this.state.breakTime + 60 });
+  handleIncrementBreak = () => {
+    if (this.state.breakTime >= 3600) return;
+    this.setState({ breakTime: this.state.breakTime + 60 });
+  };
+  handleDecrementBreak = () => {
+    if (this.state.breakTime < 60) return;
+    this.setState({ breakTime: this.state.breakTime - 60 });
   };
 
-  handleDecrement = (type) => {
-    type === "session"
-      ? this.setState({ sessionTime: this.state.sessionTime - 60 })
-      : this.setState({ breakTime: this.state.breakTime - 60 });
+  handleIncrementSession = () => {
+    if (this.state.sessionTime >= 3600) return;
+    this.setState({ sessionTime: this.state.sessionTime + 60 });
+  };
+  handleDecrementSession = () => {
+    if (this.state.sessionTime < 60) return;
+    this.setState({ sessionTime: this.state.sessionTime - 60 });
+  };
+
+  handleTimer = () => {};
+
+  componentDidMount = () => {
+    const { breakTime, sessionTime, sessionOn, breakOn } = this.state;
+    let myTimer;
+
+    //starting from initial state
+    if (sessionOn === false && breakOn === false) {
+      this.setState({ activeTime: sessionTime });
+      myTimer = setInterval(this.handleTimer, 1000);
+    }
+
+    //pause a session
+    if (sessionOn === true) {
+      this.setState({ activeTime: sessionTime });
+      myTimer = setInterval(this.handleTimer, 1000);
+      this.setState({ breakOn: false });
+    }
+
+    //pause a break
+    if (breakOn === true) {
+      this.setState({ activeTime: breakTime });
+      myTimer = setInterval(this.handleTimer, 1000);
+      this.setState({ sessionOn: false });
+    }
   };
 
   convertTime = (seconds) => {
@@ -37,7 +79,7 @@ class App extends React.Component {
   };
 
   render() {
-    const { breakTime, sessionTime } = this.state;
+    const { breakTime, sessionTime, activeTime } = this.state;
     return (
       <div className="container-main">
         <img src="https://i0.wp.com/post.healthline.com/wp-content/uploads/2019/10/Tomato_1296x728-header-1296x728.jpg?w=1155&h=1528"></img>
@@ -46,18 +88,18 @@ class App extends React.Component {
           <SetLength
             name="break"
             length={breakTime / 60}
-            increment={this.handleIncrement}
-            decrement={this.handleDecrement}
+            increment={this.handleIncrementBreak}
+            decrement={this.handleDecrementBreak}
           />
-          <Initializer onClick={this.handleReset} />
+          <Initializer reset={this.handleReset} timerInit={this.handleTimer} />
           <SetLength
             name="session"
             length={sessionTime / 60}
-            increment={this.handleIncrement}
-            decrement={this.handleDecrement}
+            increment={this.handleIncrementSession}
+            decrement={this.handleDecrementSession}
           />
         </div>
-        <Timer timeLeft={this.convertTime(sessionTime)} />
+        <Timer timeLeft={this.convertTime(activeTime)} />
       </div>
     );
   }
@@ -109,8 +151,10 @@ class Timer extends React.Component {
 const Initializer = (props) => {
   return (
     <div className="container-btns">
-      <span id="start_stop">▶️</span>
-      <span id="reset" onClick={props.onClick}>
+      <span id="start_stop" onClick={props.timerInit}>
+        ▶️
+      </span>
+      <span id="reset" onClick={props.reset}>
         🔄
       </span>
     </div>
