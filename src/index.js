@@ -23,23 +23,17 @@ class App extends React.Component {
         activeTime: 1500,
         sessionOn: false,
         breakOn: false,
-        isPaused: false,
+        isPaused: "",
       },
       () => clearInterval(myTimer)
     );
+    this.timesUpReset();
   };
 
   countDown = () => {
-    const {
-      breakTime,
-      sessionTime,
-      activeTime,
-      sessionOn,
-      breakOn,
-    } = this.state;
     myTimer = setInterval(() => {
       this.setState({ activeTime: this.state.activeTime - 1 });
-    }, 10);
+    }, 1000);
   };
 
   handleTimer = () => {
@@ -114,25 +108,42 @@ class App extends React.Component {
     return display;
   };
 
+  timesUp = () => {
+    let beep = document.querySelector("#beep");
+    beep.play();
+  };
+
+  timesUpReset = () => {
+    let beep = document.querySelector("#beep");
+    beep.pause();
+    beep.currentTime = 0;
+  };
+
   componentWillUpdate = () => {
     if (this.state.sessionOn) {
       if (this.state.activeTime < 1) {
         clearInterval(myTimer);
-        this.setState({
-          sessionOn: !this.state.sessionOn,
-          breakOn: !this.state.breakOn,
-          activeTime: this.state.breakTime,
-        });
+        this.setState(
+          {
+            sessionOn: !this.state.sessionOn,
+            breakOn: !this.state.breakOn,
+            activeTime: this.state.breakTime,
+          },
+          () => this.timesUp()
+        );
         this.countDown();
       }
     } else if (this.state.breakOn) {
       if (this.state.activeTime < 1) {
         clearInterval(myTimer);
-        this.setState({
-          sessionOn: !this.state.sessionOn,
-          breakOn: !this.state.breakOn,
-          activeTime: this.state.sessionTime,
-        });
+        this.setState(
+          {
+            sessionOn: !this.state.sessionOn,
+            breakOn: !this.state.breakOn,
+            activeTime: this.state.sessionTime,
+          },
+          () => this.timesUp()
+        );
         this.countDown();
       }
     }
@@ -224,6 +235,10 @@ const Timer = ({ sessionOn, breakOn, timeLeft, children }) => {
           : "Break"}
       </h2>
       <h1 id="time-left">{timeLeft}</h1>
+      <audio
+        id="beep"
+        src="http://www.superluigibros.com/downloads/sounds/GAMECUBE/SUPERMARIOSUNSHINE/WAV/switchtimer.wav"
+      ></audio>
       {children}
     </div>
   );
@@ -241,7 +256,5 @@ const Initializer = (props) => {
     </div>
   );
 };
-
-export default Timer;
 
 ReactDOM.render(<App />, document.getElementById("root"));
