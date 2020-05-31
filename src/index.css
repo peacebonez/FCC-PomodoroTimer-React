@@ -14,7 +14,7 @@ body {
   flex-direction: column;
   border-radius: 20px;
   background-image: linear-gradient(45deg, #a5e7ff, white);
-  box-shadow: 2px 2px 5px black;
+  box-shadow: -1px -1px 3px black;
 }
 
 .container-main img {
@@ -108,11 +108,19 @@ body {
   margin-bottom: 1vw;
 }
 
-span:hover {
+.container-btns button {
+  background: none;
+  border: 1px solid black;
+  border-radius: 10px;
+  background: #ffe7e5;
+  outline: none;
+}
+
+.container-btns button:hover {
   transform: scale(1.05);
 }
 
-span:active {
+.container-btns button:active {
   transform: translateY(4px);
 }
 #start_stop {

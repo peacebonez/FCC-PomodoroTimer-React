@@ -5,6 +5,7 @@ import "./index.css";
 let myTimer;
 
 class App extends React.Component {
+  //component state
   state = {
     breakTime: 300,
     sessionTime: 1500,
@@ -14,20 +15,18 @@ class App extends React.Component {
     isPaused: "",
   };
 
+  //reset to init
   handleReset = () => {
-    console.log("RESET TRIGGERED!");
-    this.setState(
-      {
-        breakTime: 300,
-        sessionTime: 1500,
-        activeTime: 1500,
-        sessionOn: false,
-        breakOn: false,
-        isPaused: "",
-      },
-      () => clearInterval(myTimer)
-    );
+    clearInterval(myTimer);
     this.timesUpReset();
+    this.setState({
+      breakTime: 300,
+      sessionTime: 1500,
+      activeTime: 1500,
+      sessionOn: false,
+      breakOn: false,
+      isPaused: "",
+    });
   };
 
   countDown = () => {
@@ -37,14 +36,7 @@ class App extends React.Component {
   };
 
   handleTimer = () => {
-    const {
-      breakTime,
-      sessionTime,
-      sessionOn,
-      breakOn,
-      isPaused,
-      activeTime,
-    } = this.state;
+    const { sessionTime, sessionOn, breakOn, isPaused } = this.state;
 
     if (!isPaused) {
       //starting from initial state
@@ -86,7 +78,7 @@ class App extends React.Component {
     this.setState({ breakTime: this.state.breakTime + 60 });
   };
   handleDecrementBreak = () => {
-    if (this.state.breakTime < 60) return;
+    if (this.state.breakTime <= 60) return;
     this.setState({ breakTime: this.state.breakTime - 60 });
   };
 
@@ -95,14 +87,14 @@ class App extends React.Component {
     this.setState({ sessionTime: this.state.sessionTime + 60 });
   };
   handleDecrementSession = () => {
-    if (this.state.sessionTime < 60) return;
+    if (this.state.sessionTime <= 60) return;
     this.setState({ sessionTime: this.state.sessionTime - 60 });
   };
 
   convertTime = (seconds) => {
     let minutes = Math.floor(seconds / 60);
     let remainderSeconds = seconds % 60;
-    let display = `${minutes}:${
+    let display = `${minutes < 10 ? "0" + minutes : minutes}:${
       remainderSeconds < 10 ? "0" : ""
     }${remainderSeconds}`;
     return display;
@@ -121,7 +113,7 @@ class App extends React.Component {
 
   componentWillUpdate = () => {
     if (this.state.sessionOn) {
-      if (this.state.activeTime < 1) {
+      if (this.state.activeTime <= 0) {
         clearInterval(myTimer);
         this.setState(
           {
@@ -134,7 +126,7 @@ class App extends React.Component {
         this.countDown();
       }
     } else if (this.state.breakOn) {
-      if (this.state.activeTime < 1) {
+      if (this.state.activeTime <= 0) {
         clearInterval(myTimer);
         this.setState(
           {
@@ -147,6 +139,11 @@ class App extends React.Component {
         this.countDown();
       }
     }
+  };
+
+  //Unsure if necessary, implemented this as a means to pass one of the tests.
+  componentWillUnmount = () => {
+    clearInterval(myTimer);
   };
 
   render() {
@@ -196,35 +193,30 @@ class App extends React.Component {
   }
 }
 
-class SetLength extends React.Component {
-  state = {};
-  render() {
-    return (
-      <div className="wrapper-length">
-        <h2 id={`${this.props.name}-label`}>
-          {this.props.name.charAt(0).toUpperCase() +
-            this.props.name.slice(1) +
-            " length"}
-        </h2>
-        <button
-          id={`${this.props.name}-increment`}
-          className="arrow increment"
-          onClick={() => this.props.increment(this.props.name)}
-        >
-          ↑
-        </button>
-        <p id={`${this.props.name}-length`}>{this.props.length}</p>
-        <button
-          id={`${this.props.name}-decrement`}
-          className="arrow decrement"
-          onClick={() => this.props.decrement(this.props.name)}
-        >
-          ↓
-        </button>
-      </div>
-    );
-  }
-}
+const SetLength = ({ name, length, increment, decrement }) => {
+  return (
+    <div className="wrapper-length">
+      <h2 id={`${name}-label`}>
+        {name.charAt(0).toUpperCase() + name.slice(1) + " length"}
+      </h2>
+      <button
+        id={`${name}-increment`}
+        className="arrow increment"
+        onClick={() => increment(name)}
+      >
+        ↑
+      </button>
+      <p id={`${name}-length`}>{length}</p>
+      <button
+        id={`${name}-decrement`}
+        className="arrow decrement"
+        onClick={() => decrement(name)}
+      >
+        ↓
+      </button>
+    </div>
+  );
+};
 
 const Timer = ({ sessionOn, breakOn, timeLeft, children }) => {
   return (
@@ -247,12 +239,12 @@ const Timer = ({ sessionOn, breakOn, timeLeft, children }) => {
 const Initializer = (props) => {
   return (
     <div className="container-btns">
-      <span id="start_stop" onClick={props.timerInit}>
+      <button id="start_stop" onClick={props.timerInit}>
         {props.isPaused === true || props.isPaused === "" ? "▶️" : "⏸"}
-      </span>
-      <span id="reset" onClick={props.reset}>
+      </button>
+      <button id="reset" onClick={props.reset}>
         🔄
-      </span>
+      </button>
     </div>
   );
 };
